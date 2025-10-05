@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simulador PPS</title>
+  <style>
+    :root{
+      --cor-fundo:#f9fafb;
+      --cor-card:#ffffff;
+      --cor-borda:#d1d5db;
+      --texto:#111827;
+      --texto-sec:#6b7280;
+      --cor-ok:#16a34a;
+      --cor-mid:#f59e0b;
+      --cor-low:#dc2626;
+    }
+    html,body{margin:0;padding:0;width:100%!important;max-width:100%!important;overflow-x:hidden;background:var(--cor-fundo);color:var(--texto)}
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial}
+    header{text-align:center;padding:16px;width:100%}
+    h1{margin:0;font-size:clamp(20px,2.5vw,28px)}
+    main{display:flex;flex-direction:column;gap:16px;padding:16px;width:100%;max-width:1100px;margin:auto}
+    .card{background:var(--cor-card);border:1px solid var(--cor-borda);border-radius:12px;padding:16px;box-shadow:0 2px 6px rgba(0,0,0,.05);width:100%}
+    label{font-size:13px;color:var(--texto-sec);margin:6px 0;display:block}
+    select{width:100%;padding:8px;border-radius:8px;border:1px solid var(--cor-borda);background:#fff;color:var(--texto)}
+    .row{display:flex;flex-wrap:wrap;gap:10px;width:100%}
+    .row>div{flex:1 1 200px}
+    button{padding:10px 14px;border-radius:8px;border:0;cursor:pointer}
+    button.primary{background:#111827;color:#fff}
+    button.secondary{background:#e5e7eb;color:#111827;border:1px solid var(--cor-borda)}
+    .result{display:flex;align-items:center;gap:12px;margin-top:12px;flex-wrap:wrap}
+    .badge{padding:10px 14px;border-radius:10px;font-weight:bold;text-align:center;color:#fff}
+    .ok{background:var(--cor-ok)}
+    .mid{background:var(--cor-mid)}
+    .low{background:var(--cor-low)}
+    table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+    th,td{border-bottom:1px solid var(--cor-borda);padding:8px;text-align:left}
+    th{color:var(--texto-sec)}
+    tbody tr:hover{background:#f3f4f6}
+    footer{text-align:center;font-size:12px;color:var(--texto-sec);margin:16px 0;width:100%}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Simulador PPS – Palliative Performance Scale</h1>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2 style="margin:0 0 12px 0;font-size:18px">Entradas</h2>
+      <div class="row">
+        <div>
+          <label>Deambulação</label>
+          <select id="deamb">
+            <option value="">— não especificado —</option>
+            <option>Completa</option>
+            <option>Reduzida</option>
+            <option>Sentado ou deitado</option>
+            <option>Acamado</option>
+            <option>Morte</option>
+          </select>
+        </div>
+        <div>
+          <label>Atividade e evidência de doença</label>
+          <select id="atividade">
+            <option value="">— não especificado —</option>
+            <option>Normal, sem evidência de doença</option>
+            <option>Normal, alguma evidência de doença</option>
+            <option>Com esforço, alguma evidência de doença</option>
+            <option>Incapaz para o trabalho, alguma evidência de doença</option>
+            <option>Incapaz de realizar hobbies, doença significativa</option>
+            <option>Incapacitado para qualquer trabalho, doença extensa</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Autocuidado</label>
+          <select id="auto">
+            <option value="">— não especificado —</option>
+            <option>Completo</option>
+            <option>Assistência ocasional</option>
+            <option>Assistência considerável</option>
+            <option>Assistência quase completa</option>
+            <option>Dependência completa</option>
+          </select>
+        </div>
+        <div>
+          <label>Ingestão</label>
+          <select id="ing">
+            <option value="">— não especificado —</option>
+            <option>Normal</option>
+            <option>Reduzida</option>
+            <option>Normal ou reduzida</option>
+            <option>Ingestão limitada a colheradas</option>
+            <option>Cuidados com a boca</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label>Nível de consciência</label>
+        <select id="cons">
+          <option value="">— não especificado —</option>
+          <option>Completo</option>
+          <option>Completo ou com períodos de confusão</option>
+          <option>Confuso ou em coma</option>
+        </select>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="primary" id="btnCalcular">Sugerir PPS</button>
+        <button class="secondary" id="btnLimpar">Limpar</button>
+      </div>
+      <div class="result" id="resultado" style="display:none">
+        <div id="badge" class="badge">—</div>
+        <div>
+          <div id="titulo"></div>
+          <div id="descricao" style="font-size:13px;color:var(--texto-sec)"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin:0 0 12px 0;font-size:18px">Tabela PPS</h2>
+      <div style="max-height:400px;overflow:auto;border-radius:8px;width:100%">
+        <table id="tabela">
+          <thead>
+            <tr>
+              <th>%</th>
+              <th>Deambulação</th>
+              <th>Atividade</th>
+              <th>Autocuidado</th>
+              <th>Ingestão</th>
+              <th>Consciência</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>Baseado na PPS (Maciel, 2009). Apenas apoio, não substitui julgamento clínico.</footer>
+
+  <script>
+    const PPS=[
+      {pct:100,deamb:'Completa',atividade:'Normal, sem evidência de doença',auto:'Completo',ing:'Normal',cons:'Completo'},
+      {pct:90,deamb:'Completa',atividade:'Normal, alguma evidência de doença',auto:'Completo',ing:'Normal',cons:'Completo'},
+      {pct:80,deamb:'Completa',atividade:'Com esforço, alguma evidência de doença',auto:'Completo',ing:'Normal',cons:'Completo'},
+      {pct:70,deamb:'Reduzida',atividade:'Incapaz para o trabalho, alguma evidência de doença',auto:'Completo',ing:'Normal ou reduzida',cons:'Completo'},
+      {pct:60,deamb:'Reduzida',atividade:'Incapaz de realizar hobbies, doença significativa',auto:'Assistência ocasional',ing:'Normal ou reduzida',cons:'Completo'},
+      {pct:50,deamb:'Sentado ou deitado',atividade:'Incapacitado para qualquer trabalho, doença extensa',auto:'Assistência considerável',ing:'Normal ou reduzida',cons:'Completo ou com períodos de confusão'},
+      {pct:40,deamb:'Acamado',atividade:'Idem',auto:'Assistência quase completa',ing:'Normal ou reduzida',cons:'Completo ou com períodos de confusão'},
+      {pct:30,deamb:'Acamado',atividade:'Idem',auto:'Dependência completa',ing:'Reduzida',cons:'Completo ou com períodos de confusão'},
+      {pct:20,deamb:'Acamado',atividade:'Idem',auto:'Dependência completa',ing:'Ingestão limitada a colheradas',cons:'Completo ou com períodos de confusão'},
+      {pct:10,deamb:'Acamado',atividade:'Idem',auto:'Dependência completa',ing:'Cuidados com a boca',cons:'Confuso ou em coma'},
+      {pct:0,deamb:'Morte',atividade:'-',auto:'-',ing:'-',cons:'-'}
+    ];
+
+    const el=id=>document.getElementById(id);
+    function renderTabela(rows){
+      const tbody=document.querySelector('#tabela tbody');
+      tbody.innerHTML='';
+      rows.forEach(r=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td><b>${r.pct}</b></td><td>${r.deamb}</td><td>${r.atividade}</td><td>${r.auto}</td><td>${r.ing}</td><td>${r.cons}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+    renderTabela(PPS);
+
+    function badgeClass(pct){if(pct>=70) return 'badge ok'; if(pct>=30) return 'badge mid'; return 'badge low';}
+    function desc(pct){if(pct>=90) return 'Independente.'; if(pct>=70) return 'Funcional com limitações.'; if(pct===60) return 'Ajuda ocasional.'; if(pct===50) return 'Ajuda considerável.'; if(pct===40) return 'Ajuda quase completa.'; if(pct===30) return 'Dependência completa.'; if(pct===20) return 'Ingestão limitada.'; if(pct===10) return 'Cuidados com boca, coma/confusão.'; if(pct===0) return 'Óbito.';}
+
+    el('btnCalcular').addEventListener('click',()=>{
+      let sugestao=100; const d=el('deamb').value,a=el('atividade').value,au=el('auto').value,i=el('ing').value,c=el('cons').value;
+      if(d==='Morte') sugestao=0;
+      else if(d==='Acamado'){if(i==='Cuidados com a boca'||c==='Confuso ou em coma') sugestao=10; else if(i==='Ingestão limitada a colheradas') sugestao=20; else if(au==='Dependência completa') sugestao=30; else sugestao=40;}
+      else if(d==='Sentado ou deitado') sugestao=50;
+      else if(d==='Reduzida'){if(a==='Incapaz de realizar hobbies, doença significativa') sugestao=60; else sugestao=70;}
+      else if(d==='Completa'){if(a==='Normal, sem evidência de doença') sugestao=100; else if(a==='Normal, alguma evidência de doença') sugestao=90; else if(a==='Com esforço, alguma evidência de doença') sugestao=80;}
+      el('resultado').style.display='flex';
+      el('badge').className=badgeClass(sugestao); el('badge').textContent=sugestao+'%';
+      el('titulo').textContent='Sugestão PPS: '+sugestao+'%';
+      el('descricao').textContent=desc(sugestao);
+    });
+    el('btnLimpar').addEventListener('click',()=>{['deamb','atividade','auto','ing','cons'].forEach(id=>el(id).value='');el('resultado').style.display='none';renderTabela(PPS)});
+  </script>
+</body>
+</html>
